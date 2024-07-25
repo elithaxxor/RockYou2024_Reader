@@ -234,7 +234,7 @@ int main(int argc, char *argv[]) {
 
         // MARK: END OF OPTION 2 FROM USER INPUT (SEARCH FOR STRING)
         end_time = clock();
-        printf("Freeing buffer memory...\n");
+        printf("***************** \n Freeing buffer memory...\n");
         free(buffer);
         free(workingDirectory);
         fclose(file);
@@ -242,7 +242,7 @@ int main(int argc, char *argv[]) {
         printf("File closed.\n");
         // Calculate the elapsed time
         cpu_time_used = ((double) (end_time - start_time)) / CLOCKS_PER_SEC;
-        printf("Search complete. Time taken: %f seconds\n", cpu_time_used);
+        printf("********************** \n[+] Search complete. Time taken: %f seconds\n", cpu_time_used);
 
         return EXIT_SUCCESS;
     }
