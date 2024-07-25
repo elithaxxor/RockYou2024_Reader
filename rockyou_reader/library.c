@@ -566,7 +566,7 @@ void printCurrentWorkingDirectory() {
         printf("[+]..Current working directory: %s%s\n", getcwd(cwd, sizeof(cwd)), "\n ****************");
 
     } else {
-        perror("[-]getcwd() error \n.. exiting program\n ****************************");
+        perror("[-] getcwd() error returning NULL  \n.. exiting program\n ****************************");
     }
 
 }
