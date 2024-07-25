@@ -417,7 +417,7 @@ void search_in_chunk(const char *buffer, size_t buffer_size, size_t chunk_start,
             printf("[-] Keyword not found in the chunk\n");
             printf("[!] Count: %d\n", count);
             count++;
-            break;
+            continue;
         }
         if(pos >= buffer + buffer_size) {
             printf("[-] Keyword not found in the chunk\n");
@@ -426,7 +426,7 @@ void search_in_chunk(const char *buffer, size_t buffer_size, size_t chunk_start,
             break;
         }
         if (pos == strstr(pos, keyword)) {
-            printf("[!] Keyword not at position: %zu\n", chunk_start + offset);
+            printf("[!] Keyword not at position: %s\n", pos);
             printf("[!] Count: %d\n", count);
             count++;
             break;
