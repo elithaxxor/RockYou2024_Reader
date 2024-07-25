@@ -35,7 +35,7 @@
 // Functions
 size_t getBufferSize(); // asks user for buffer to use in bytes
 int userChoice(); // User choice to view file or search for a string
-bool viewFile(const char *filename, size_t BUFFER_SIZE);// called if view file is invoked
+bool viewFile(const char *filename, size_t BUFFER_SIZE);// views conntents containing file
 void search_in_chunk(const char *buffer, size_t BUFFER_SIZE, size_t chunk_start, const char *keyword, size_t *line_number); // called if search file is invoked
 char* getCurrentWorkingDirectory();
 char* getWorkingDirectory(); // Function to get the current working directory
@@ -55,7 +55,7 @@ int main(int argc, char *argv[]) {
     //double cpu_time_used;
 
     char KEYWORD[MAX_KEYWORD_LENGTH];
-    char filename[MAX_FILENAME_LENGTH];
+    char FILENAME[MAX_FILENAME_LENGTH];
 
     // Gets buffersize from user input
     size_t BUFFER_SIZE = getBufferSize();
@@ -89,43 +89,42 @@ int main(int argc, char *argv[]) {
     }
 
 
-    // Get the filename from the user
+    // Get the FILENAME from the user
 
     printf("****************************** \n[!] Listing files in the directory\n\n");
     listFilesInDirectory();
     printCurrentWorkingDirectory();
     printf(" ****************************"
            "\n\n[+] directory is valid.. "
-           "\n[?] Enter the filename to search in: ");
+           "\n[?] Enter the FILENAME to search in: ");
 
 
     // Edgecases for fileinput
-    if (fgets(filename, MAX_FILENAME_LENGTH, stdin) == NULL) {
-        perror("[-] Error reading filename, returning NULL\n .. exiting program ");
+    if (fgets(FILENAME, MAX_FILENAME_LENGTH, stdin) == NULL) {
+        perror("[-] Error reading FILENAME, returning NULL\n .. exiting program ");
         printCurrentWorkingDirectory();
         free(workingDirectory);
         return EXIT_FAILURE;
     }
-    printf("[!].. checking if filename exists [enter the filename again] \n");
+    printf("[!].. checking if FILENAME exists [enter the FILENAME again] \n");
 
-
-    if (fgets(filename, sizeof(filename), stdin) != NULL) {
+    if (fgets(FILENAME, sizeof(FILENAME), stdin) != NULL) {
             // Remove the newline character if it exists
-            filename[strcspn(filename, "\n")] = '\0';
-            printf("[+] Filename entered: %s\n", filename);
+            FILENAME[strcspn(FILENAME, "\n")] = '\0';
+            printf("[+] Filename entered: %s\n", FILENAME);
             // Check if the file exists
-            if (fileExists(filename)) {
-                printf("[+] File '%s' exists.\n", filename);
+            if (fileExists(FILENAME)) {
+                printf("[+] File '%s' exists.\n", FILENAME);
                 printf("[!].. moving on ");
             } else {
-                printf("[-] File '%s%s' does not exist.\n", filename, "'\n.. exiting program\n");
-                perror("[-] Error reading filename, returning NULL\n .. exiting program ");
+                printf("[-] File '%s%s' does not exist.\n", FILENAME, "'\n.. exiting program\n");
+                perror("[-] Error reading FILENAME, returning NULL\n .. exiting program ");
                 return EXIT_FAILURE;
             }
         }
 
 
-    printf("**** \n[+] Filename successfully entered: %s%s%s\n", filename, "\n********************![!] CWD", "\n workingDirectory:\n ");
+    printf("**** \n[+] Filename successfully entered: %s%s%s\n", FILENAME, "\n********************![!] CWD", "\n workingDirectory:\n ");
     printCurrentWorkingDirectory();
 
 
@@ -139,12 +138,12 @@ int main(int argc, char *argv[]) {
         clock_t start_time, end_time;
         start_time = clock();
 
-        printf("user choice is 1\n... \n viewing file\n%s", filename);
+        printf("user choice is 1\n... \n viewing file\n%s", FILENAME);
         printf("Buffer size: %zu bytes\n", BUFFER_SIZE);
 
         // Calls the viewFile function, returns bools for err / succ status
         bool viewFileStatus;
-        viewFileStatus = viewFile(filename, BUFFER_SIZE);
+        viewFileStatus = viewFile(FILENAME, BUFFER_SIZE);
         if (viewFileStatus == 0) {
             perror("[-] Error viewing file\n");
             return EXIT_FAILURE;
@@ -183,14 +182,14 @@ int main(int argc, char *argv[]) {
         printf("[?] Keyword to search: %s\n", KEYWORD);
 
         // Remove newline character if present
-        size_t filename_length = strlen(filename);
-        if (filename[filename_length - 1] == '\n') {
-            filename[filename_length - 1] = '\0';
+        size_t filename_length = strlen(FILENAME);
+        if (FILENAME[filename_length - 1] == '\n') {
+            FILENAME[filename_length - 1] = '\0';
         }
-        printf("[?] Enter the filename to search in: %s\n", filename);
+        printf("[?] Enter the FILENAME to search in: %s\n", FILENAME);
 
-        printf("[!]Opening file: %s\n", filename);
-        FILE *file = fopen(filename, "r");
+        printf("[!]Opening file: %s\n", FILENAME);
+        FILE *file = fopen(FILENAME, "r");
         if (file == NULL) {
             perror("[-]Error opening file");
             return EXIT_FAILURE;
@@ -533,22 +532,25 @@ char* getWorkingDirectory() {
 
         input[strcspn(input, "\n")] = 0; // Remove newline character
         printf("[+] Working directory entered: %s\n", input);
+
+
+        // Check if the user wants to use the current working directory
         if (chdir(input) == 0) {
             printf("[+] Attepting  changed the working directory to: %s\n", input);
             char *directory = (char *) malloc((strlen(input) + 1) * sizeof(char));
-            printf("[!] Assigning Working directory: %s\n", directory);
+            printf("[+] Assigning Working directory: %s\n", directory);
 
             // checks and prints the new working directory to confirm the change
             char cwd[1024];
             if (getcwd(cwd, sizeof(cwd)) != NULL) {
-                printf("Current working directory: %s\n", cwd);
+                printf("[+] Current working directory: %s\n", cwd);
 
                 strcpy(directory, input);
                 return directory;
 
             } else {
-                perror("[-] Error changing working directory");
-                return NULL;
+                perror("[-] Error changing working directory, using CWD instead");
+                return getCurrentWorkingDirectory();
             }
         }
     }
