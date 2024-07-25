@@ -36,7 +36,7 @@
 size_t getBufferSize(); // asks user for buffer to use in bytes
 int userChoice(); // User choice to view file or search for a string
 bool viewFile(const char *filename, size_t BUFFER_SIZE);// called if view file is invoked
-void search_in_chunk(const char *buffer, size_t BUFFER_SIZE, size_t chunk_start, const char *keyword);
+void search_in_chunk(const char *buffer, size_t BUFFER_SIZE, size_t chunk_start, const char *keyword, size_t *line_number); // called if search file is invoked
 char* getCurrentWorkingDirectory();
 char* getWorkingDirectory(); // Function to get the current working directory
 void changeWorkingDirectory(); // Function to change the current working directory
@@ -54,7 +54,7 @@ int main(int argc, char *argv[]) {
     // start_time = clock();
     //double cpu_time_used;
 
-    char keyword[MAX_KEYWORD_LENGTH];
+    char KEYWORD[MAX_KEYWORD_LENGTH];
     char filename[MAX_FILENAME_LENGTH];
 
     // Gets buffersize from user input
@@ -168,19 +168,19 @@ int main(int argc, char *argv[]) {
         double cpu_time_used;
 
 
-        // Get the keyword from the user
-        printf("[?] Enter the keyword to search: ");
-        if (fgets(keyword, MAX_KEYWORD_LENGTH, stdin) == NULL) {
-            perror("[-] Error reading keyword");
+        // Get the KEYWORD from the user
+        printf("[?] Enter the KEYWORD to search: ");
+        if (fgets(KEYWORD, MAX_KEYWORD_LENGTH, stdin) == NULL) {
+            perror("[-] Error reading KEYWORD");
             return EXIT_FAILURE;
         }
         // Remove newline character if present
-        size_t keyword_length = strlen(keyword);
-        if (keyword[keyword_length - 1] == '\n') {
-            keyword[keyword_length - 1] = '\0';
+        size_t keyword_length = strlen(KEYWORD);
+        if (KEYWORD[keyword_length - 1] == '\n') {
+            KEYWORD[keyword_length - 1] = '\0';
             keyword_length--;
         }
-        printf("[?] Keyword to search: %s\n", keyword);
+        printf("[?] Keyword to search: %s\n", KEYWORD);
 
         // Remove newline character if present
         size_t filename_length = strlen(filename);
@@ -211,10 +211,12 @@ int main(int argc, char *argv[]) {
         size_t chunk_start = 0;
         size_t bytes_read;
         int count = 0; // Count the number of chunks read
+        size_t line_number = 1;
+
         while ((bytes_read = fread(buffer, 1, BUFFER_SIZE, file)) > 0) {
             printf("Read %zu bytes from file starting at position: %zu\n", bytes_read, chunk_start);
             buffer[bytes_read] = '\0'; // Null-terminate the buffer
-            search_in_chunk(buffer, bytes_read, chunk_start, keyword);
+            search_in_chunk(buffer, bytes_read, chunk_start, KEYWORD, &line_number);
             chunk_start += bytes_read;
 
             // Move the buffer's start to the position after the last overlap
@@ -402,8 +404,10 @@ bool viewFile(const char *filename, size_t bufferSize) {
 // TODO: FIX THIS (SEE CONDITIONAL BELOW)
 // This function searches for a keyword in a chunk of data when "search file" is invoked. the function uses strstr to find the keyword in the buffer
 // and prints the position of the keyword in the chunk.
-void search_in_chunk(const char *buffer, size_t buffer_size, size_t chunk_start, const char *keyword) {
+void search_in_chunk(const char *buffer, size_t buffer_size, size_t chunk_start, const char *keyword, size_t *line_number) {
     const char *pos = buffer;
+    const char *line_start = buffer;
+    size_t current_line = *line_number;
     FILE *result_file = fopen("search_res.txt", "w");
 
     if (result_file == NULL) {
@@ -412,34 +416,51 @@ void search_in_chunk(const char *buffer, size_t buffer_size, size_t chunk_start,
 
     int count = 0;
     while ((pos = strstr(pos, keyword)) != NULL) {
-        size_t offset = pos - buffer;
-        if (keyword == NULL) {
-            printf("[-] Keyword not found in the chunk\n");
-            printf("[!] Count: %d\n", count);
-            count++;
-            continue;
-        }
-        if(pos >= buffer + buffer_size) {
-            printf("[-] Keyword not found in the chunk\n");
-            printf("[!] Count: %d\n", count);
-            count++;
-            break;
-        }
-        if (pos == strstr(pos, keyword)) {
-            printf("[!] Keyword not at position: %s\n", pos);
-            printf("[!] Count: %d\n", count);
-            count++;
-            break;
-        }
-        printf("[+] Keyword found at position: %zu\n", chunk_start + offset);
-        fprintf(result_file, "[+] Keyword found at position: %zu\n", chunk_start + offset);
-        fwrite(pos, 1, strlen(keyword), result_file);
-        printf("[+] Count: %d\n", count);
-        pos += strlen(keyword);
-        count++;
-    }
-}
+        size_t offset = pos - buffer; // Calculate the offset of the keyword in the chunk
 
+        // Move line_start to the start of the line containing the found keyword
+        while (line_start < pos && *line_start != '\n') {
+            line_start++;
+        }
+        line_start++;
+        // Calculate the line number
+        const char *temp = buffer;
+        while (temp < pos) {
+            if (*temp == '\n') {
+                current_line++;
+            }
+            temp++;
+        }
+
+        // Print and write the found line and position to the result file
+        printf("[+] Keyword found at position: %zu on line: %zu\n", chunk_start + offset, current_line);
+        fprintf(result_file, "Keyword found at position: %zu on line: %zu\n", chunk_start + offset, current_line);
+
+        // Print and write the line content to the result file
+        const char *line_end = pos;
+        while (line_end < buffer + buffer_size && *line_end != '\n') {
+            line_end++;
+        }
+
+        char line_content[line_end - line_start + 1];
+        strncpy(line_content, line_start, line_end - line_start);
+        line_content[line_end - line_start] = '\0';
+
+        printf("Line content: %s\n", line_content);
+        fprintf(result_file, "Line content: %s\n", line_content);
+
+        pos += strlen(keyword);
+    }
+
+    // Update the line number for the next chunk
+    while (line_start < buffer + buffer_size) {
+        if (*line_start == '\n') {
+            current_line++;
+        }
+        line_start++;
+    }
+    *line_number = current_line;
+}
 
 //}
 //    while (((pos = strstr(pos, keyword)) != NULL) && ((pos < (buffer + buffer_size)))) {
