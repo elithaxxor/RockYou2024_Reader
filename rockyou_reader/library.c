@@ -5,6 +5,9 @@
 #include <stdbool.h>
 #include <unistd.h>
 #include <string.h>
+#include <sys/stat.h>
+#include <dirent.h>
+
 
 
 // Buffer alloc
@@ -38,14 +41,17 @@ char* getCurrentWorkingDirectory();
 char* getWorkingDirectory(); // Function to get the current working directory
 void changeWorkingDirectory(); // Function to change the current working directory
 void printCurrentWorkingDirectory(); // GET CWD
+bool fileExists(const char *filename); // Check if a file exists in the current working directory
+int is_usable_directory(const char *path); // Check if the directory exists
+void listFilesInDirectory(); // List files in the current working directory
 
 
 int main(int argc, char *argv[]) {
 
 
     // This will be used to time the 'viewFile' function and the 'searchFile' function
-   // clock_t start_time, end_time;
-   // start_time = clock();
+    // clock_t start_time, end_time;
+    // start_time = clock();
     //double cpu_time_used;
 
     char keyword[MAX_KEYWORD_LENGTH];
@@ -57,26 +63,63 @@ int main(int argc, char *argv[]) {
 
 
     // Get the working directory from the user
-    char *workingDirectory = getWorkingDirectory();
+    char *workingDirectory;
+    workingDirectory = getWorkingDirectory();
     printf("[+] (main) Working directory: %s\n", workingDirectory);
 
+    printf("[!] Checking if the directory exists\n");
+    // Edgecase for working directory
     if (workingDirectory == NULL) {
         perror("[-] Error getting working directory\n(CWD) .. exiting program\n");
         printCurrentWorkingDirectory();
         free(workingDirectory);
         return EXIT_FAILURE;
     }
-    printf("[+] Working directory: %s\n", workingDirectory);
+
+    printf("[!] Checking if the directory is usable\n");
+
+    if (is_usable_directory(workingDirectory)) {
+        printf(" [+] The directory is usable.\n");
+    } else {
+        printf("[-] The directory is not usable.\n");
+    }
+
 
     // Get the filename from the user
-    printf("[?] Enter the filename to search in: ");
+
+    listFilesInDirectory();
+    printCurrentWorkingDirectory();
+    printf(" [+] directory is valid.. "
+           "\n[?] Enter the filename to search in: ");
+
+
+    // Edgecases for fileinput
     if (fgets(filename, MAX_FILENAME_LENGTH, stdin) == NULL) {
         perror("[-] Error reading filename, returning NULL\n .. exiting program ");
         printCurrentWorkingDirectory();
         free(workingDirectory);
         return EXIT_FAILURE;
     }
-    printf("[+] Filename entered: %s%s%s\n", filename, "\n ![!] CWD", "\n workingDirectory:");
+    printf("[!].. checking if filename exists\n");
+
+
+    if (fgets(filename, sizeof(filename), stdin) != NULL) {
+            // Remove the newline character if it exists
+            filename[strcspn(filename, "\n")] = '\0';
+            printf("[+] Filename entered: %s\n", filename);
+            // Check if the file exists
+            if (fileExists(filename)) {
+                printf("[+] File '%s' exists.\n", filename);
+                printf("[!].. moving on ");
+            } else {
+                printf("[-] File '%s%s' does not exist.\n", filename, "'\n.. exiting program\n");
+                perror("[-] Error reading filename, returning NULL\n .. exiting program ");
+                return EXIT_FAILURE;
+            }
+        }
+
+
+    printf("[+] Filename successfully entered: %s%s%s\n", filename, "\n ![!] CWD", "\n workingDirectory:");
     printCurrentWorkingDirectory();
 
 
@@ -412,35 +455,26 @@ char* getWorkingDirectory() {
 
         input[strcspn(input, "\n")] = 0; // Remove newline character
         printf("[+] Working directory entered: %s\n", input);
-    }
+        if (chdir(input) == 0) {
+            printf("[+] Attepting  changed the working directory to: %s\n", input);
+            char *directory = (char *) malloc((strlen(input) + 1) * sizeof(char));
+            printf("[!] Assigning Working directory: %s\n", directory);
 
-    // TODO: FIX THIS
-    if (strcmp(input, "default") == 0) {
-        printf("[!] Default entered the current working directory\n");
-        getCurrentWorkingDirectory();
-        char *directory = getCurrentWorkingDirectory();
-        printf("[+] Working directory: %s\n", directory);
-        return getCurrentWorkingDirectory();
-    }
-    else if (chdir(input) == 0) {
-        printf("[+] Successfully changed the working directory to: %s\n", input);
-        char *directory = (char *)malloc((strlen(input) + 1) * sizeof(char));
-        printf("[+] Working directory: %s\n", directory);
+            // checks and prints the new working directory to confirm the change
+            char cwd[1024];
+            if (getcwd(cwd, sizeof(cwd)) != NULL) {
+                printf("Current working directory: %s\n", cwd);
 
-        strcpy(directory, input);
-        return directory;
-    }
+                strcpy(directory, input);
+                return directory;
 
-    else {
-        char *directory = (char *)malloc((strlen(input) + 1) * sizeof(char));
-        printf("working directory: %s\n", directory);
-        strcpy(directory, input);
-        return directory;
+            } else {
+                perror("[-] Error changing working directory");
+                return NULL;
+            }
+        }
     }
-// if  ((chdir(input) != 0)){
-//        perror("[-] Error changing working directory");
-//        return NULL;
-//    }
+    return NULL;
 }
 
 
@@ -454,4 +488,43 @@ void printCurrentWorkingDirectory() {
     } else {
         perror("[-]getcwd() error");
     }
+}
+
+// Function to check if a file exists in the current working directory
+bool fileExists(const char *filename) {
+    FILE *file = fopen(filename, "r");
+    if (file) {
+        // File exists
+       // fclose(file);
+       printf("[+] File exists: %s\n", filename);
+        return true;
+    } else {
+        // File does not exist
+        printf("[-] File does not exist: %s\n", filename);
+        return false;
+    }
+}
+
+int is_usable_directory(const char *path) {
+    struct stat info;
+
+    printf("[!] ******************* \n Checking if the directory exists and is usable\n");
+    // Check if the path exists and is a directory
+    if (stat(path, &info) != 0) {
+        perror("[-] stat: path does not exist");
+        return 0; // Path does not exist
+    }
+    if (!(info.st_mode & S_IFDIR)) {
+        printf("[-] The path is not a directory.\n");
+        return 0; // Not a directory
+    }
+
+    // Check read and write permissions
+    if (access(path, R_OK | W_OK) != 0) {
+        perror("[-] access: no read or write permission for the directory");
+        return 0; // No read or write permission
+    }
+
+    printf("[+] Directory exists and is usable usable\n.. returning to main function\n *******************");
+    return 1; // Directory exists and is usable
 }
