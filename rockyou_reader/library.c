@@ -140,6 +140,7 @@ int main(int argc, char *argv[]) {
 
         printf("user choice is 1\n... \n viewing file\n%s", FILENAME);
         printf("Buffer size: %zu bytes\n", BUFFER_SIZE);
+        printf("[!] Start Time: %ld\n", start_time);
 
         // Calls the viewFile function, returns bools for err / succ status
         bool viewFileStatus;
@@ -162,9 +163,6 @@ int main(int argc, char *argv[]) {
 
     // TODO: MAY NEED TO REMOVE ELSE
     else {
-        clock_t start_time, end_time;
-        start_time = clock();
-        double cpu_time_used;
 
 
         // Get the KEYWORD from the user
@@ -208,7 +206,12 @@ int main(int argc, char *argv[]) {
             fclose(file);
             return EXIT_FAILURE;
         }
+        clock_t start_time, end_time;
+        start_time = clock();
+        double cpu_time_used;
+
         printf("Buffer allocated with size: %zu bytes\n", BUFFER_SIZE + keyword_length - 1);
+        printf("[+] Start Time: %ld\n", start_time);
 
 
 
@@ -243,6 +246,7 @@ int main(int argc, char *argv[]) {
         // Calculate the elapsed time
         cpu_time_used = ((double) (end_time - start_time)) / CLOCKS_PER_SEC;
         printf("********************** \n[+] Search complete. Time taken: %f seconds\n", cpu_time_used);
+        printf("[+] Start time: %ld %s %ld \n", start_time, "[+] End Time: %ld\n", end_time);
 
         return EXIT_SUCCESS;
     }
