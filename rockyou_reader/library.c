@@ -2,12 +2,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include <stdbool.h>
-#include <unistd.h>
+#include <stdbool.h> // For boolean data type
+#include <unistd.h> // For getcwd()
 #include <string.h>
-#include <sys/stat.h>
-#include <dirent.h>
-
+#include <sys/stat.h> // For stat()
+#include <dirent.h> // For directory listing
+#include <errno.h> // For errno
 
 
 // Buffer alloc
@@ -79,14 +79,19 @@ int main(int argc, char *argv[]) {
     printf("[!] Checking if the directory is usable\n");
 
     if (is_usable_directory(workingDirectory)) {
-        printf(" [+] The directory is usable.\n");
+        printf(" [+] The directory is usable.\n.. moving on\n");
     } else {
         printf("[-] The directory is not usable.\n");
+        perror("[-] Error checking if the directory is usable\n.. exiting program\n");
+        printCurrentWorkingDirectory();
+        free(workingDirectory);
+        return EXIT_FAILURE;
     }
 
 
     // Get the filename from the user
 
+    printf("****************************** \n[!] Listing files in the directory\n");
     listFilesInDirectory();
     printCurrentWorkingDirectory();
     printf(" [+] directory is valid.. "
@@ -370,15 +375,14 @@ bool viewFile(const char *filename, size_t bufferSize) {
     while ((bytesRead = fread(buffer, 1, bufferSize, file)) > 0) {
         // Write the chunk to the console
         fwrite(buffer, 1, bytesRead, stdout);
-        printf("[!]bytes read: %zu\n", bytesRead);
+        printf("\n ****************************** \n[!]bytes read: %zu\n", bytesRead);
 
         // Optional: Prompt user to continue after each chunk
         printf("\n-- [?] Press Enter to continue --\n");
         //getchar(); // Wait for user input
     }
-
     if (ferror(file)) {
-        perror("[!] Error reading file");
+        perror("[-] Error reading file");
         free(buffer);
         fclose(file);
         return 0;
@@ -527,4 +531,28 @@ int is_usable_directory(const char *path) {
 
     printf("[+] Directory exists and is usable usable\n.. returning to main function\n *******************");
     return 1; // Directory exists and is usable
+}
+
+// Function to list all files in the current directory
+void listFilesInDirectory() {
+    DIR *d;
+    // Pointer for directory entry
+    struct dirent *dir;
+
+    // Open the current directory
+    d = opendir(".");
+    if (d) {
+        printf("[+] Files in the current directory:\n");
+        // Read and print each directory entry
+        while ((dir = readdir(d)) != NULL) {
+            // Skip the special entries "." and ".."
+            if (dir->d_name[0] != '.') {
+                printf("%s\n", dir->d_name);
+            }
+        }
+        // Close the directory
+        closedir(d);
+    } else {
+        perror("opendir() error");
+    }
 }
