@@ -262,8 +262,8 @@ int userChoice() {
     char searchString[256];
 
     printf("************************** \n[?] What would you like to do?\n");
-    printf("1. View the text file\n");
-    printf("2. Search for a specific string in the text\n");
+    printf("[1.] View the text file\n");
+    printf("[2.] Search for a specific string in the text\n");
     printf("Enter your choice (1-2): ");
     scanf("%d", &choice);
 
@@ -288,9 +288,11 @@ size_t getBufferSize() {
     int choice;
     size_t bufferSize = 0;
 
-    printf("[!] Choose the amount of RAM to use:\n*********************************************\n\n 0. 1GB\n1. 4GB\n2. 8GB\n3. 16GB\n4. 32GB\n 5. 1MB\n 6. 2MB\n 7. 4MB\n 8. 8MB\n, 9. 16MB\n 10. 32MB\n 11. 64MB\n 12. 128MB\n 13. 256MB\n 14. 512MB\n\n "
+    printf("[!] Choose the amount of RAM to use:\n*********************************************\n\n [0.] 1GB\n[1.] "
+           "4GB\n[2.] 8GB\n[3.] 16GB\n[4.] 32GB\n [5.] 1MB\n[ 6.] 2MB\n[ 7.] 4MB\n [8.] 8MB\n, [9.] 16MB\n [10.] 32MB\n "
+           "[11.] 64MB\n [12.] 128MB\n[ 13.] 256MB\n [14.] 512MB\n\n "
            "*********************************************\n");
-    printf("Enter your choice (1-14): [default 1MB ]: ");
+    printf("Enter your choice [1-14]: [default 1MB, recommended 8MB - 64MB ]: ");
     scanf("%d", &choice);
 
     switch (choice) {
