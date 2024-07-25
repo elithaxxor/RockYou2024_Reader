@@ -91,10 +91,11 @@ int main(int argc, char *argv[]) {
 
     // Get the filename from the user
 
-    printf("****************************** \n[!] Listing files in the directory\n");
+    printf("****************************** \n[!] Listing files in the directory\n\n");
     listFilesInDirectory();
     printCurrentWorkingDirectory();
-    printf(" [+] directory is valid.. "
+    printf(" ****************************"
+           "\n\n[+] directory is valid.. "
            "\n[?] Enter the filename to search in: ");
 
 
@@ -105,7 +106,7 @@ int main(int argc, char *argv[]) {
         free(workingDirectory);
         return EXIT_FAILURE;
     }
-    printf("[!].. checking if filename exists\n");
+    printf("[!].. checking if filename exists [enter the filename again] \n");
 
 
     if (fgets(filename, sizeof(filename), stdin) != NULL) {
@@ -124,7 +125,7 @@ int main(int argc, char *argv[]) {
         }
 
 
-    printf("[+] Filename successfully entered: %s%s%s\n", filename, "\n ![!] CWD", "\n workingDirectory:");
+    printf("**** \n[+] Filename successfully entered: %s%s%s\n", filename, "\n********************![!] CWD", "\n workingDirectory:\n ");
     printCurrentWorkingDirectory();
 
 
@@ -407,29 +408,45 @@ void search_in_chunk(const char *buffer, size_t buffer_size, size_t chunk_start,
 
     }
 
-    //char *buffer = malloc(buffer_size);
-    // TODO: FIX THIS
-    /* If the keyword is found, print the position of the keyword in the chunk
-     and the position in the file by adding the chunk start offset. */
+    while (((pos = strstr(pos, keyword)) != NULL) && ((pos < (buffer + buffer_size)))) {
 
-    size_t written = fwrite(buffer, 1, buffer_size, fp);
-
-    while ((pos = strstr(pos, keyword)) != NULL) {
-        size_t offset = pos - buffer;
-        printf("[+]Keyword found at position: %zu\n", chunk_start + offset);
-        pos += strlen(keyword);
-        printf("[+] Number of elements written: %zu\n", written);
-
-
-        if ((pos == strstr(pos, keyword)) == 0) {
-            printf("[!] Keyword not at position: %zu\n", chunk_start + offset);
-        }
         if (pos >= buffer + buffer_size) {
             printf("[-] Keyword not found in the chunk\n");
             break;
         }
+        size_t offset = pos - buffer;
+        printf("[+] Keyword found at position: %zu\n", chunk_start + offset);
+        pos += strlen(keyword);
+        printf("[!] new pos  %s\n", pos);
     }
 }
+
+    //char *buffer = malloc(buffer_size);
+    // TODO: FIX THIS
+    /* If the keyword is found, print the position of the keyword in the chunk
+     and the position in the file by adding the chunk start offset. */
+//
+//    size_t written = fwrite(buffer, 1, buffer_size, fp);
+//
+//    while ((pos = strstr(pos, keyword)) != NULL) {
+//        size_t offset = pos - buffer;
+//        printf("[!]Searching  %zu\n", chunk_start + offset);
+//        printf("[!] Offset %zu\n", offset);
+//
+//        printf("[!] Keyword found at position: %zu\n", chunk_start + offset);
+//        printf("[+] Number of elements written: %zu\n", written);
+//
+//        // Check if the keyword is at the start of the buffer
+//        if ((pos == strstr(pos, keyword)) == 0) {
+//            printf("[!] Keyword not at position: %zu\n", chunk_start + offset);
+//        }
+//        // Move to the next character to search for the keyword
+//        else if (pos >= buffer + buffer_size) {
+//            printf("[-] Keyword not found in the chunk\n");
+//            break;
+//        }
+//    }
+//}
 
 // Function to get the current working directory
 char* getCurrentWorkingDirectory() {
@@ -484,14 +501,15 @@ char* getWorkingDirectory() {
 
 void printCurrentWorkingDirectory() {
     char cwd[1024];  // Buffer to hold the current working directory
-    printf("[!] Function to print the current working directory called\n");
+    printf("**************** \n [!] Function to print the current working directory called\n");
     // Get the current working directory
     if (getcwd(cwd, sizeof(cwd)) != NULL) {
-        printf("[+]..Current working directory: %s\n", getcwd(cwd, sizeof(cwd)));
+        printf("[+]..Current working directory: %s%s\n", getcwd(cwd, sizeof(cwd)), "\n ****************");
 
     } else {
-        perror("[-]getcwd() error");
+        perror("[-]getcwd() error \n.. exiting program\n ****************************");
     }
+
 }
 
 // Function to check if a file exists in the current working directory
