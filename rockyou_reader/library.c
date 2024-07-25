@@ -170,6 +170,7 @@ int main(int argc, char *argv[]) {
         // Get the KEYWORD from the user
         printf("[?] Enter the KEYWORD to search: ");
         if (fgets(KEYWORD, MAX_KEYWORD_LENGTH, stdin) == NULL) {
+            free(workingDirectory);
             perror("[-] Error reading KEYWORD");
             return EXIT_FAILURE;
         }
@@ -191,6 +192,8 @@ int main(int argc, char *argv[]) {
         printf("[!]Opening file: %s\n", FILENAME);
         FILE *file = fopen(FILENAME, "r");
         if (file == NULL) {
+            free(workingDirectory);
+            free(file);
             perror("[-]Error opening file");
             return EXIT_FAILURE;
         }
@@ -199,6 +202,9 @@ int main(int argc, char *argv[]) {
         if (buffer == NULL) {
             perror("[-] Error allocating buffer");
             printf("[-] Buffer size: %zu bytes\n", BUFFER_SIZE + keyword_length - 1);
+            free(workingDirectory);
+            free(file);
+            free(buffer);
             fclose(file);
             return EXIT_FAILURE;
         }
@@ -230,11 +236,14 @@ int main(int argc, char *argv[]) {
         end_time = clock();
         printf("Freeing buffer memory...\n");
         free(buffer);
+        free(workingDirectory);
         fclose(file);
+        free(file);
         printf("File closed.\n");
         // Calculate the elapsed time
         cpu_time_used = ((double) (end_time - start_time)) / CLOCKS_PER_SEC;
         printf("Search complete. Time taken: %f seconds\n", cpu_time_used);
+
         return EXIT_SUCCESS;
     }
     free(workingDirectory);
