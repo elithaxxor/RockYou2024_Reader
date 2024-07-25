@@ -533,11 +533,11 @@ char* getCurrentWorkingDirectory() {
 
 
 
-// Function to ask the user for the working directory
+// Function to ask the user for the working directory, calls getCurrentWorkingDirectory() as a default
 char* getWorkingDirectory() {
     char input[256];
 
-    printf("[?] Enter the working directory (or type 'default' to use the current working directory): ");
+    printf("[?] Enter the working directory (or type ['default']  or ['enter'] to use the current working directory. ");
     //scanf("%s", input);
     fgets(input, sizeof(input), stdin);
 
