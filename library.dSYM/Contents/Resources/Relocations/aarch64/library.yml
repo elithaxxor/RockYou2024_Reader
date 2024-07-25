@@ -1,0 +1,11 @@
+---
+triple:          'arm64-apple-darwin'
+binary-path:     library
+relocations:
+  - { offsetInCU: 0x26, offset: 0x26, size: 0x8, addend: 0x0, symName: _main, symObjAddr: 0x0, symBinAddr: 0x100002A24, symSize: 0x544 }
+  - { offsetInCU: 0x72, offset: 0x72, size: 0x8, addend: 0x0, symName: _main, symObjAddr: 0x0, symBinAddr: 0x100002A24, symSize: 0x544 }
+  - { offsetInCU: 0x198, offset: 0x198, size: 0x8, addend: 0x0, symName: _viewFile, symObjAddr: 0x544, symBinAddr: 0x100002F68, symSize: 0x20C }
+  - { offsetInCU: 0x1FE, offset: 0x1FE, size: 0x8, addend: 0x0, symName: _search_in_chunk, symObjAddr: 0x750, symBinAddr: 0x100003174, symSize: 0x184 }
+  - { offsetInCU: 0x29B, offset: 0x29B, size: 0x8, addend: 0x0, symName: _userChoice, symObjAddr: 0x8D4, symBinAddr: 0x1000032F8, symSize: 0x124 }
+  - { offsetInCU: 0x2D1, offset: 0x2D1, size: 0x8, addend: 0x0, symName: _getBufferSize, symObjAddr: 0x9F8, symBinAddr: 0x10000341C, symSize: 0x338 }
+...
