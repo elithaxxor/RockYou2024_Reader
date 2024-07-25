@@ -1,12 +1,7 @@
 # Large File Keyword Search
 
-This C program searches for a specific keyword in a large text file and writes the results, including the line number and content, to a separate file named `search_res.txt`. The program is optimized for performance by using a configurable buffer size and is designed to handle large files efficiently.
-2.	Input:
-•	Enter the keyword to search when prompted.
-•	Enter the filename to search in when prompted.
-3.	Output:
-•	The program will print the progress and results to the console.
-•	The search results, including the position, line number, and line content where the keyword is found, will be written to search_res.txt.
+This C program searches for a specific keyword in a large text file and writes the results, including the line number and content, 
+to a separate file named `search_res.txt`. The program is optimized for performance by using a configurable buffer size and is designed to handle large files efficiently.
 
 
 ## Features
@@ -30,10 +25,17 @@ This C program searches for a specific keyword in a large text file and writes t
    cd large-file-keyword-search
 
 
+   gcc -o search_large_file search_large_file.c
+   ./search_large_file
 
-gcc -o search_large_file search_large_file.c
+## Usage
 
-./search_large_file
+Input:
+   •	Enter the keyword to search when prompted.
+   •	Enter the filename to search in when prompted.
+Output:
+     •	The program will print the progress and results to the console.
+   •	The search results, including the position, line number, and line content where the keyword is found, will be written to search_res.txt.
 
 
 ## Example
