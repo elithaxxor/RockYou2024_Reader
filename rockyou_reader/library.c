@@ -210,6 +210,7 @@ int main(int argc, char *argv[]) {
         // TODO: CHECK THE LOGIC OF THIS, IF THE BUFFER IS NOT NULL, THEN CONTINUE
         size_t chunk_start = 0;
         size_t bytes_read;
+        int count = 0; // Count the number of chunks read
         while ((bytes_read = fread(buffer, 1, BUFFER_SIZE, file)) > 0) {
             printf("Read %zu bytes from file starting at position: %zu\n", bytes_read, chunk_start);
             buffer[bytes_read] = '\0'; // Null-terminate the buffer
@@ -220,6 +221,8 @@ int main(int argc, char *argv[]) {
             fseek(file, -(long) (keyword_length - 1), SEEK_CUR);
             chunk_start -= keyword_length - 1;
             printf("Adjusted file pointer to position: %zu\n", chunk_start);
+            printf("Line: %d\n", count);
+            count++; // Increment the count
         }
 
         // MARK: END OF OPTION 2 FROM USER INPUT (SEARCH FOR STRING)
@@ -401,25 +404,58 @@ bool viewFile(const char *filename, size_t bufferSize) {
 // and prints the position of the keyword in the chunk.
 void search_in_chunk(const char *buffer, size_t buffer_size, size_t chunk_start, const char *keyword) {
     const char *pos = buffer;
-    FILE *fp;
-    fp = fopen("search_res.txt", "wb");
-    if (fp == NULL) {
-        perror("[-] Error opening file to write chucnks to disk");
+    FILE *result_file = fopen("search_res.txt", "w");
 
+    if (result_file == NULL) {
+        perror("[-] Error opening file to record search results");
     }
 
-    while (((pos = strstr(pos, keyword)) != NULL) && ((pos < (buffer + buffer_size)))) {
-
-        if (pos >= buffer + buffer_size) {
+    int count = 0;
+    while ((pos = strstr(pos, keyword)) != NULL) {
+        size_t offset = pos - buffer;
+        if (keyword == NULL) {
             printf("[-] Keyword not found in the chunk\n");
+            printf("[!] Count: %d\n", count);
+            count++;
             break;
         }
-        size_t offset = pos - buffer;
+        if(pos >= buffer + buffer_size) {
+            printf("[-] Keyword not found in the chunk\n");
+            printf("[!] Count: %d\n", count);
+            count++;
+            break;
+        }
+        if (pos == strstr(pos, keyword)) {
+            printf("[!] Keyword not at position: %zu\n", chunk_start + offset);
+            printf("[!] Count: %d\n", count);
+            count++;
+            break;
+        }
         printf("[+] Keyword found at position: %zu\n", chunk_start + offset);
+        fprintf(result_file, "[+] Keyword found at position: %zu\n", chunk_start + offset);
+        fwrite(pos, 1, strlen(keyword), result_file);
+        printf("[+] Count: %d\n", count);
         pos += strlen(keyword);
-        printf("[!] new pos  %s\n", pos);
+        count++;
     }
 }
+
+
+//}
+//    while (((pos = strstr(pos, keyword)) != NULL) && ((pos < (buffer + buffer_size)))) {
+//
+//        if (pos >= buffer + buffer_size) {
+//            printf("[-] Keyword not found in the chunk\n");
+//            break;
+//        }
+//        size_t offset = pos - buffer;
+//        printf("[+] Keyword found at position: %zu\n", chunk_start + offset);
+//        fwrite(pos, 1, strlen(keyword), fp);
+//
+//        pos += strlen(keyword);
+//        printf("[!] new pos  %s\n", pos);
+//    }
+//}
 
     //char *buffer = malloc(buffer_size);
     // TODO: FIX THIS
